@@ -89,6 +89,8 @@ ROBOTSTXT_OBEY = False
 # HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 
 
+USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.87 Safari/537.36'
+
 FEED_EXPORT_ENCODING = 'utf-8'
 
 # 数据库配置
