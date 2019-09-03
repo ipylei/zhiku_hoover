@@ -97,8 +97,17 @@ FEED_EXPORT_ENCODING = 'utf-8'
 MYSQL_HOST = '127.0.0.1'
 MYSQL_DATABASE = 'zhiku'
 MYSQL_PORT = 3306
-MYSQL_USER = 'root'
+MYSQL_USERNAME = 'root'
 MYSQL_PASSWORD = '123456'
+
+# RabbiMQ配置
+# MQ_HOST = '10.4.7.44'
+MQ_HOST = '127.0.0.1'
+MQ_USERNAME = 'guest'
+MQ_PASSWORD = 'guest'
+MQ_PORT = 5672
+MQ_QUEUE = 'zk_file_task_queue'
+MQ_SWITCH = False  # 是否推入MQ
 
 BASIC_URL = 'https://www.brookings.edu/search/?s={}'
 # 翻页页数

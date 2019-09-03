@@ -6,11 +6,11 @@ from sqlalchemy.dialects.mysql import LONGTEXT
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 
-from hoover.settings import MYSQL_HOST, MYSQL_DATABASE, MYSQL_PORT, MYSQL_USER, MYSQL_PASSWORD
+from hoover.settings import MYSQL_HOST, MYSQL_DATABASE, MYSQL_PORT, MYSQL_USERNAME, MYSQL_PASSWORD
 
 # 创建连接
 # connect_url = "mysql+pymysql://root:123456@localhost:3306/zhiku"
-connection_url = "mysql+pymysql://{}:{}@{}:{}/{}".format(MYSQL_USER, MYSQL_PASSWORD, MYSQL_HOST,
+connection_url = "mysql+pymysql://{}:{}@{}:{}/{}".format(MYSQL_USERNAME, MYSQL_PASSWORD, MYSQL_HOST,
                                                          MYSQL_PORT, MYSQL_DATABASE)
 engine = create_engine(connection_url, encoding='utf-8', echo=True)
 
@@ -94,14 +94,14 @@ class ExpertContactSeed(Base):
         Session.commit()
 
 
-class ExternalSeed(Base):
-    """站外链接"""
-    __tablename__ = 'hoover_external'  # 表名
+class AbandonSeed(Base):
+    """未采集的链接"""
+    __tablename__ = 'hoover_abandon'  # 表名
     id = Column(Integer, primary_key=True)
 
     status_code = Column(Integer, comment='访问站内连接或站外连接时状态码')
-    internal_url = Column(String(500), unique=True, comment='站内链接')
-    external_url = Column(String(500), unique=True, comment='对应的站外链接')
+    internal_url = Column(String(500), unique=True, default='', comment='遗弃的链接')
+    external_url = Column(String(500), unique=True, default='', comment='重定向后的链接')
 
     def save(self):
         Session.add(self)
