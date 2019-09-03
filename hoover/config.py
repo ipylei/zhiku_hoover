@@ -8,7 +8,7 @@ parsing_rule_experts = {
     "research_field": "//div[@id='main']//div[@class='field-name-field-tref-expertise']//div[@class='field-items']//div[@class='field-item']/a/text()",
     "brief_introd": "//div[@id='main']//div[contains(@class,'pane-node-body')]",
     "research_team": "//div[@id='main']//div[contains(@class,'field-name-field-fellow-teams')]//*[contains(@class,'field-name-field-ref-group')]//text()",
-    "active_media": "//div[@id='main']//div[contains(@class,'field-name-field-fellow-sites')]//a"
+    "active_media": "//div[@id='main']//div[contains(@class,'field-name-field-fellow-sites')]//a/@href"
 }
 parsing_rule_news = {
     "title": "//meta[@property='og:title']/@content | //h1[@class='page-title']/text()",

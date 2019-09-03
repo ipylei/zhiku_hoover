@@ -10,6 +10,7 @@ import json
 
 import pika
 from scrapy.exceptions import DropItem
+from scrapy.http import HtmlResponse
 
 from hoover.items import SearchItem, ExpertItem, AbandonItem, ExpertContactItem
 from hoover.models import Session, SearchSeed, ExpertsSeed, AbandonSeed, ExpertContactSeed
@@ -36,7 +37,7 @@ class BrookingsPipeline(object):
             switch=crawler.settings.get("MQ_SWITCH"),
         )
 
-    def packaged_data(self, website, url, resource_urls, content="内容", resource_type=6):
+    def packaged_data(self, website, url, resource_urls, resource_type=6, content=""):
         data = {
             "PlatFrom": website,
             "NewsUrl": url,
@@ -62,14 +63,34 @@ class BrookingsPipeline(object):
                 obj.save()
 
             if self.switch:
-                website = '斯坦福大学胡佛战争革命与和平研究所'
-                url = item.get('url')
-                pdf_file = item.get('pdf_file')
-                resource_urls = json.loads(pdf_file).get("附件")
-                if resource_urls:
-                    body = self.packaged_data(website=website, url=url, resource_urls=resource_urls)
+                website = '布鲁金斯学会'
+                url = item.get("url")
+
+                # 1.推送搜索内容或者专家的附件到MQ
+                pdf_file = item.get("pdf_file")
+                if pdf_file:
+                    pdf_file_list = json.loads(pdf_file).get("附件")
+                    body = self.packaged_data(website=website, url=url, resource_urls=pdf_file_list, resource_type=6)
                     self.channel.basic_publish(exchange='', routing_key=self.queue, body=body)
+
+                # 2.推送内容中的图片
+                content = item.get("content")
+                if content:
+                    response = HtmlResponse(url=url, body=content, encoding='utf8')
+                    img_list = response.xpath("//img/@src").extract()
+                    if img_list:
+                        body = self.packaged_data(website=website, url=url, resource_urls=img_list,
+                                                  resource_type=2, content=content)
+                        self.channel.basic_publish(exchange='', routing_key=self.queue, body=body)
+
+                # 3.推送专家头像(图片)
+                head_portrait = item.get("head_portrait")
+                if head_portrait:
+                    body = self.packaged_data(website=website, url=url, resource_urls=[head_portrait], resource_type=2)
+                    self.channel.basic_publish(exchange='', routing_key=self.queue, body=body)
+
             return item
+
         except Exception as e:
             Session.rollback()
             raise DropItem(e)
@@ -79,8 +100,7 @@ class BrookingsPipeline(object):
                                                                             port=self.port,
                                                                             credentials=pika.PlainCredentials(
                                                                                 self.username, self.password),
-                                                                            heartbeat=0
-                                                                            ))
+                                                                            heartbeat=0))
         self.channel = self.connection.channel()
         # self.channel.queue_declare(queue=self.queue)
 

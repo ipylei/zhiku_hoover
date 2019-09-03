@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
+import json
 import re
 
 import scrapy
 
-from hoover.config import parsing_rules
-from hoover.items import ExpertItem, AbandonItem
+from hoover.config import parsing_rules, parsing_rule_experts
+from hoover.items import ExpertItem, AbandonItem, ExpertContactItem
 
 
 class ExportsSpider(scrapy.Spider):
@@ -18,7 +19,7 @@ class ExportsSpider(scrapy.Spider):
         for url in urls:
             yield scrapy.Request(url=response.urljoin(url), callback=self.parse_expert)
 
-    def _get_experts_data(self, category, parsing_rule_dict, response):
+    def _get_experts_data(self, parsing_rule_dict, response):
         name = response.xpath(parsing_rule_dict.get("name")).extract_first()
         head_portrait = response.xpath(parsing_rule_dict.get("head_portrait")).extract_first()
         jobs = response.xpath(parsing_rule_dict.get("job")).extract()
@@ -29,11 +30,11 @@ class ExportsSpider(scrapy.Spider):
         rewards_selector = response.xpath(parsing_rule_dict.get("reward"))
         reward = rewards_selector.xpath("string(.)").extract()
         reward = ';'.join(reward)
+        # 研究团队
         research_team = response.xpath(parsing_rule_dict.get("research_team")).extract()
         research_team = ';'.join(research_team)
         data = {
             "url": response.url,
-            "category": category,
             "name": name,
             "head_portrait": head_portrait,
             "job": job,
@@ -42,16 +43,21 @@ class ExportsSpider(scrapy.Spider):
             "brief_introd": brief_introd,
             "research_team": research_team,
         }
-        active_media_selector = response.xpath(parsing_rule_dict.get("active_media"))
-        if active_media_selector:
-            keys = active_media_selector.xpath("./text()").extract()
-            values = active_media_selector.xpath("./@href").extract()
-            active_media = []
-            active_media_dict = dict(zip(keys, values))
-            for key, value in active_media_dict.items():
-                active_media.append('{}:{}'.format(key, value))
-            active_media = ';'.join(active_media)
-            data["active_media"] = active_media
+
+        # 联系方式
+        contact = dict()
+        # 活跃的媒体
+        active_media_dict = dict()
+        active_medias = response.xpath(parsing_rule_dict.get("active_media")).extract()
+        for media in active_medias:
+            if 'twitter' in media:
+                active_media_dict['twitter'] = media
+        if active_media_dict:
+            contact.update(active_media_dict)  # 更新联系方式，添加活跃的媒体
+            active_media = json.dumps(active_media_dict, ensure_ascii=False)
+        else:
+            active_media = ''
+        data.update({"contact": contact, "active_media": active_media})
         return data
 
     def parse_expert(self, response):
@@ -63,8 +69,13 @@ class ExportsSpider(scrapy.Spider):
             category = category.group(1)
             if category == "profiles":
                 parsing_rule_dict = parsing_rules.get(category)
-                data = self._get_experts_data(category, parsing_rule_dict, response)
+                data = self._get_experts_data(parsing_rule_dict, response)
+                contacts = data.pop("contact")
                 item = ExpertItem(**data)
+                for key, value in contacts.items():
+                    contact_data = {"url": response.url, "name": data.get("name"), "type": key, "contact": value}
+                    item2 = ExpertContactItem(**contact_data)
+                    yield item2  # 联系方式
                 yield item
             else:
                 data = {"status_code": response.status, "internal_url": response.url, "external_url": external_url}
@@ -74,3 +85,7 @@ class ExportsSpider(scrapy.Spider):
             data = {"status_code": response.status, "internal_url": response.url, "external_url": external_url}
             item = AbandonItem(**data)
             yield item
+
+        # url = response.url
+        # active_media = response.xpath(parsing_rule_experts.get("active_media")).extract()
+        # yield ExpertItem(url=url, active_media=active_media)

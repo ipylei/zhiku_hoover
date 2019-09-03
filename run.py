@@ -2,4 +2,5 @@
 
 from scrapy import cmdline
 
+# cmdline.execute('scrapy crawl spider_exports -o result.json'.split())
 cmdline.execute('scrapy crawl spider_exports'.split())
