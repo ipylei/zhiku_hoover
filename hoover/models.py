@@ -77,6 +77,7 @@ class ExpertsSeed(Base):
     current_positions = Column(Text, default='', comment='目前的职位')  # 含多个
     past_positions = Column(Text, default='', comment='过去的职位')  # 含多个
     languages = Column(String(500), default='', comment='语言')  # 含多个
+    research_team = Column(String(500), default='', comment='研究团队')  # 含多个
 
     def save(self):
         Session.add(self)

@@ -63,9 +63,9 @@ ROBOTSTXT_OBEY = False
 
 # Configure item pipelines
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
-# ITEM_PIPELINES = {
-#    'hoover.pipelines.HooverPipeline': 300,
-# }
+ITEM_PIPELINES = {
+    'hoover.pipelines.BrookingsPipeline': 301,
+}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
 # See https://doc.scrapy.org/en/latest/topics/autothrottle.html
@@ -109,6 +109,5 @@ MQ_PORT = 5672
 MQ_QUEUE = 'zk_file_task_queue'
 MQ_SWITCH = False  # 是否推入MQ
 
-BASIC_URL = 'https://www.brookings.edu/search/?s={}'
 # 翻页页数
 PAGE_COUNT = 10
