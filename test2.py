@@ -11,10 +11,17 @@
 # print(active_media)
 
 
-import json
+# import json
+#
+# with open('result.json', 'r')as f:
+#     contents = json.load(f)
+#     for content in contents:
+#         if content.get("active_media"):
+#             print(content['url'], '----', content["active_media"])
 
-with open('result.json', 'r')as f:
-    contents = json.load(f)
-    for content in contents:
-        if content.get("active_media"):
-            print(content['url'], '----', content["active_media"])
+import datetime
+
+# string = "Thursday, August 29, 2019"
+string = "Monday, September 2, 2019"
+res = datetime.datetime.strptime(string, "%A, %B %d, %Y")
+print(res)

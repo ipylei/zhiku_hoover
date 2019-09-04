@@ -19,7 +19,8 @@ class ExportsSpider(scrapy.Spider):
         for url in urls:
             yield scrapy.Request(url=response.urljoin(url), callback=self.parse_expert)
 
-    def _get_experts_data(self, parsing_rule_dict, response):
+    @staticmethod
+    def _get_experts_data(parsing_rule_dict, response):
         name = response.xpath(parsing_rule_dict.get("name")).extract_first()
         head_portrait = response.xpath(parsing_rule_dict.get("head_portrait")).extract_first()
         jobs = response.xpath(parsing_rule_dict.get("job")).extract()
@@ -85,7 +86,3 @@ class ExportsSpider(scrapy.Spider):
             data = {"status_code": response.status, "internal_url": response.url, "external_url": external_url}
             item = AbandonItem(**data)
             yield item
-
-        # url = response.url
-        # active_media = response.xpath(parsing_rule_experts.get("active_media")).extract()
-        # yield ExpertItem(url=url, active_media=active_media)

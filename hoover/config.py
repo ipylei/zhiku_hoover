@@ -12,11 +12,15 @@ parsing_rule_experts = {
 }
 parsing_rule_news = {
     "title": "//meta[@property='og:title']/@content | //h1[@class='page-title']/text()",
-    "publish_time": "//span[@class='date-display-single']",
+    "publish_time": "//header[@class='article-header']//span[@class='date-display-single']/text()",
     "content": "//div[contains(@class,'field-name-body')]",
-
+    "description": "//meta[@property='og:description']/@content | //meta[@name='description']/@content",
+    "author": "//header[@class='article-header']//span[@class='field-items']/a/text()"
 }
+parsing_rule_events = parsing_rule_news
+parsing_rule_research = parsing_rule_news
 
 parsing_rules = {
     "profiles": parsing_rule_experts,
+    "events": parsing_rule_events
 }
