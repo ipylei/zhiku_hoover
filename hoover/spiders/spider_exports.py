@@ -50,6 +50,7 @@ class ExportsSpider(scrapy.Spider):
         # 活跃的媒体
         active_media_dict = dict()
         active_medias = response.xpath(parsing_rule_dict.get("active_media")).extract()
+
         for media in active_medias:
             if 'twitter' in media:
                 active_media_dict['twitter'] = media
