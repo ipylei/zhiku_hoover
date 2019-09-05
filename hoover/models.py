@@ -41,6 +41,8 @@ class SearchSeed(Base):
     pdf_file = Column(Text, default='', comment='附件路径')  # 含多个
 
     category = Column(String(500), default='', comment='栏目')
+    status_code = Column(Integer, comment='解析方法')
+    method = Column(String(500), default='', comment='解析方法')
 
     def save(self):
         Session.add(self)

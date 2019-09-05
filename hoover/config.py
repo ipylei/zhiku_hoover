@@ -22,5 +22,7 @@ parsing_rule_research = parsing_rule_news
 
 parsing_rules = {
     "profiles": parsing_rule_experts,
-    "events": parsing_rule_events
+    "news": parsing_rule_news,
+    "events": parsing_rule_events,
+    "research": parsing_rule_research,
 }

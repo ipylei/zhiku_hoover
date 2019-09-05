@@ -23,6 +23,8 @@ class SearchItem(scrapy.Item):
     pdf_file = scrapy.Field()
 
     category = scrapy.Field()
+    status_code = scrapy.Field()
+    method = scrapy.Field()
 
 
 class ExpertItem(scrapy.Item):

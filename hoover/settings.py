@@ -64,7 +64,7 @@ ROBOTSTXT_OBEY = False
 # Configure item pipelines
 # See https://doc.scrapy.org/en/latest/topics/item-pipeline.html
 ITEM_PIPELINES = {
-    'hoover.pipelines.BrookingsPipeline': 301,
+    'hoover.pipelines.HooverPipeline': 301,
 }
 
 # Enable and configure the AutoThrottle extension (disabled by default)
@@ -127,8 +127,8 @@ MQ_HOST = '127.0.0.1'
 MQ_USERNAME = 'guest'
 MQ_PASSWORD = 'guest'
 MQ_PORT = 5672
-MQ_IMAGE_QUEUE = 'zk_img_task_queue'  # 内容图片队列
 MQ_FILE_QUEUE = 'zk_file_task_queue'  # 附件队列
+MQ_IMAGE_QUEUE = 'zk_img_task_queue'  # 内容图片队列
 MQ_EXPERT_QUEUE = 'zk_expert_img_task_queue'  # 专家头像队列
 # MQ_SWITCH = True  # 是否推入MQ
 

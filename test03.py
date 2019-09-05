@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
 from newspaper import Article
 
-url = 'https://www.nationalreview.com/corner/journalism-donald-trump-conservative-media-revolution/'
+# url = 'https://www.nationalreview.com/corner/journalism-donald-trump-conservative-media-revolution/'
+url = 'https://www.worldaffairs.org/events/event/1876'
 # 创建文章对象
 article = Article(url)
 # 下载网页
@@ -15,10 +16,11 @@ article.parse()
 print('关键词:{}'.format(article.keywords))
 
 # 文章摘要
-print('摘要:{}'.format(article.summary))
+print('标题:', article.title)
+print('时间:', article.publish_date)
+print('正文:', article.text)
+print('摘要:', article.summary)
+print('作者:', article.authors)
 
-print('标题：' + article.title)
-print('作者:{}'.format(article.authors))
-print('时间:{}'.format(article.publish_date))
-print('图片:{}'.format(article.top_image))
-print('正文:' + article.text)
+print('配图:', article.top_image)
+print('视频:', article.movies)
