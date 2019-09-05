@@ -20,7 +20,8 @@ class SpiderSearch(scrapy.Spider):
 
     def __init__(self, name=None, **kwargs):
         super(SpiderSearch, self).__init__(name, **kwargs)
-        self.search_words = kwargs.get('search_words')
+        # self.search_words = kwargs.get('search_words')
+        self.search_words = kwargs.get('search_words') if kwargs.get('search_words') else 'news'
 
     def start_requests(self):
         start_url = self.basic_url.format(self.search_words)
@@ -106,10 +107,6 @@ class SpiderSearch(scrapy.Spider):
 
     @staticmethod
     def newspaper_parse(url, status_code, publish_time):
-        """使用newspaper解析
-        :param url:
-        :return:
-        """
         article = Article(url)
         # 下载网页
         article.download()
