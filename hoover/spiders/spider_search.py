@@ -8,10 +8,9 @@ from newspaper import Article
 
 from hoover.config import parsing_rules
 from hoover.items import SearchItem, ExpertItem, ExpertContactItem, AbandonItem
-from hoover.settings import PAGE_COUNT
 
 
-class SpiderSearch(scrapy.Spider):
+class SearchSpider(scrapy.Spider):
     name = 'spider_search'
     # allowed_domains = ['hoover.org']
     # start_urls = ['http://hoover.org/']
@@ -19,9 +18,9 @@ class SpiderSearch(scrapy.Spider):
     basic_url = 'https://www.hoover.org/site-search?keyword=news&src=navbar'
 
     def __init__(self, name=None, **kwargs):
-        super(SpiderSearch, self).__init__(name, **kwargs)
-        # self.search_words = kwargs.get('search_words')
+        super(SearchSpider, self).__init__(name, **kwargs)
         self.search_words = kwargs.get('search_words') if kwargs.get('search_words') else 'news'
+        self.page_size = kwargs.get('page_size') if kwargs.get('page_size') else 10
 
     def start_requests(self):
         start_url = self.basic_url.format(self.search_words)
@@ -29,7 +28,7 @@ class SpiderSearch(scrapy.Spider):
 
     def parse(self, response):
         self.page_count += 1
-        if self.page_count <= PAGE_COUNT:
+        if self.page_count <= self.page_size:
             item_links = response.xpath(
                 "//div[contains(@class,'view-search')]//div[@class='view-content']//h2/a/@href").extract()
             published_times = response.xpath(
