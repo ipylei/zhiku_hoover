@@ -8,6 +8,7 @@ from newspaper import Article
 
 from hoover.config import parsing_rules
 from hoover.items import SearchItem, ExpertItem, ExpertContactItem, AbandonItem
+from hoover.settings import WEBSITE
 
 
 class SearchSpider(scrapy.Spider):
@@ -19,11 +20,11 @@ class SearchSpider(scrapy.Spider):
 
     def __init__(self, name=None, **kwargs):
         super(SearchSpider, self).__init__(name, **kwargs)
-        self.search_words = kwargs.get('search_words') if kwargs.get('search_words') else 'news'
+        self.keyword = kwargs.get('keyword') if kwargs.get('keyword') else 'news'
         self.page_size = kwargs.get('page_size') if kwargs.get('page_size') else 10
 
     def start_requests(self):
-        start_url = self.basic_url.format(self.search_words)
+        start_url = self.basic_url.format(self.keyword)
         yield scrapy.Request(url=start_url)
 
     def parse(self, response):
@@ -48,16 +49,21 @@ class SearchSpider(scrapy.Spider):
     def _get_item_data(category, parsing_rule_dict, response):
         title = response.xpath(parsing_rule_dict.get("title")).extract_first()
         published_time = response.xpath(parsing_rule_dict.get("publish_time")).extract_first()
-        publish_time = datetime.datetime.strptime(published_time, "%A, %B %d, %Y")
+        publish_time = str(datetime.datetime.strptime(published_time, "%A, %B %d, %Y"))
         content = response.xpath(parsing_rule_dict.get("content")).extract_first()
         description = response.xpath(parsing_rule_dict.get("description")).extract_first()
         data = {
-            "url": response.url,
-            "category": category,
-            "title": title,
-            "publish_time": publish_time,
-            "content": content,
-            "description": description,
+            "Url": response.url,
+            "Title": title,
+            "Author": "",
+            "PublishTime": publish_time,
+            "Keywords": "",
+            "Abstract": description if description else "",
+            "Content": content if content else "",
+            "Category": category,
+            "topic": "",
+            "tags": "",
+            "site_name": WEBSITE
         }
         return data
 
@@ -66,25 +72,29 @@ class SearchSpider(scrapy.Spider):
         name = response.xpath(parsing_rule_dict.get("name")).extract_first()
         head_portrait = response.xpath(parsing_rule_dict.get("head_portrait")).extract_first()
         jobs = response.xpath(parsing_rule_dict.get("job")).extract()
-        job = ';'.join(jobs)
+        job = ','.join(jobs)
         research_field = response.xpath(parsing_rule_dict.get("research_field")).extract()
-        research_field = ';'.join(research_field)
+        research_field = ','.join(research_field)
         brief_introd = response.xpath(parsing_rule_dict.get("brief_introd")).extract_first()
         rewards_selector = response.xpath(parsing_rule_dict.get("reward"))
         reward = rewards_selector.xpath("string(.)").extract()
-        reward = ';'.join(reward)
+        reward = ','.join(reward)
         # 研究团队
-        research_team = response.xpath(parsing_rule_dict.get("research_team")).extract()
-        research_team = ';'.join(research_team)
+        # research_team = response.xpath(parsing_rule_dict.get("research_team")).extract()
+        # research_team = ','.join(research_team)
         data = {
-            "url": response.url,
             "name": name,
-            "head_portrait": head_portrait,
-            "job": job,
-            "reward": reward,
-            "research_field": research_field,
-            "brief_introd": brief_introd,
-            "research_team": research_team,
+            "experts_url": response.url,
+            "img_url": head_portrait if head_portrait else "",
+            "abstract": brief_introd if brief_introd else "",
+            "research_field": research_field if research_field else "",
+            "job": job if job else "",
+            "education": "",
+
+            "reward": reward if reward else "",
+            # "research_team": research_team,
+            "relevant": "",
+            "createTime": ""
         }
 
         # 联系方式
@@ -98,9 +108,12 @@ class SearchSpider(scrapy.Spider):
                 active_media_dict['twitter'] = media
         if active_media_dict:
             contact.update(active_media_dict)  # 更新联系方式，添加活跃的媒体
-            active_media = json.dumps(active_media_dict, ensure_ascii=False)
+            # active_media = json.dumps(active_media_dict, ensure_ascii=False)
+            active_media = ','.join(active_media_dict.values())
         else:
-            active_media = ''
+            active_media = ""
+
+        contact = contact if contact else ""
         data.update({"contact": contact, "active_media": active_media})
         return data
 
@@ -113,28 +126,34 @@ class SearchSpider(scrapy.Spider):
         article.parse()
 
         data = dict()
-        data['url'] = url
-        data['keywords'] = article.keywords if article.keywords else None
-        data['title'] = article.title if article.title else None
-        data['content'] = article.text if article.text else None
-        data['method'] = 'newspaper'
-        data['status_code'] = status_code
-        data['publish_time'] = publish_time
+        data['Url'] = url
+        data['Title'] = article.title if article.title else ""
+        data['Author'] = ""
+        data['PublishTime'] = publish_time
+        data['Keywords'] = ",".join(article.keywords)
+        data['Abstract'] = ""
+        data['Content'] = article.text if article.text else ""
+        data['Category'] = ""
+        data['topic'] = ""
+        data['tags'] = ""
+        data['site_name'] = WEBSITE
+        # data['method'] = 'newspaper'
+        # data['status_code'] = status_code
         return data
 
     def parse_detail(self, response):
         publish_time = response.meta.get("publish_time")
         if publish_time:
             publish_time = publish_time.strip()
-            publish_time = datetime.datetime.strptime(publish_time, "%A, %B %d, %Y")
+            publish_time = str(datetime.datetime.strptime(publish_time, "%A, %B %d, %Y"))
         else:
-            publish_time = None
+            publish_time = ""
 
         # 重定向的网址
         external_url = response.headers.get("Location")
         if external_url:
             external_url = external_url.decode()
-        if response.status in [301, 302]:
+        if response.status in [301, 302] and external_url:
             data = self.newspaper_parse(external_url, response.status, publish_time)
             item = SearchItem(**data)
             yield item
@@ -150,22 +169,22 @@ class SearchSpider(scrapy.Spider):
                     yield item
                 elif category in parsing_rules and category == "profiles":
                     data = self._get_experts_data(parsing_rule_dict, response)
-                    contacts = data.pop("contact")
+                    # contacts = data.pop("contact")
                     item = ExpertItem(**data)
-                    for key, value in contacts.items():
-                        contact_data = {"url": response.url, "name": data.get("name"), "type": key, "contact": value}
-                        item2 = ExpertContactItem(**contact_data)
-                        yield item2  # 联系方式
                     yield item
+                    # for key, value in contacts.items():
+                    #     contact_data = {"url": response.url, "name": data.get("name"), "type": key, "contact": value}
+                    #     item2 = ExpertContactItem(**contact_data)
+                    #     yield item2  # 联系方式
                 else:
-                    data = self.newspaper_parse(external_url, response.status, publish_time)
+                    data = self.newspaper_parse(response.url, response.status, publish_time)
                     item = SearchItem(**data)
                     yield item
             else:
-                data = self.newspaper_parse(external_url, response.status, publish_time)
+                data = self.newspaper_parse(response.url, response.status, publish_time)
                 item = SearchItem(**data)
                 yield item
-        else:  # 其他响应码
-            data = {"status_code": response.status, "internal_url": response.url, "external_url": external_url}
-            item = AbandonItem(**data)
-            yield item
+        # else:  # 其他响应码
+        #     data = {"status_code": response.status, "internal_url": response.url, "external_url": external_url}
+        #     item = AbandonItem(**data)
+        #     yield item
