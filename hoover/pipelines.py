@@ -7,6 +7,7 @@
 
 
 import json
+import time
 
 import pika
 from scrapy.exceptions import DropItem
@@ -100,8 +101,8 @@ class HooverPipeline(object):
 
                 "ClickCount": 0,
                 "CommentCount": 0,
-                "CreateTime": "",
-                "ModifyTime": "",
+                "CreateTime": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())),
+                "ModifyTime": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())),
                 "ForwardNum": 0,
                 "LanguageCode": ""
             }
@@ -129,6 +130,7 @@ class HooverPipeline(object):
                 "Platform": 1271
             },
             "experts": [{
+                "createTime": time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(time.time())),
             }],
             "ListComments": ""
         }

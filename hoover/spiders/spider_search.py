@@ -94,7 +94,7 @@ class SearchSpider(scrapy.Spider):
             "reward": reward if reward else "",
             # "research_team": research_team,
             "relevant": "",
-            "createTime": ""
+            # "createTime": ""
         }
 
         # 联系方式
