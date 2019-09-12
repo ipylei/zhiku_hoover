@@ -16,7 +16,7 @@ class SearchSpider(scrapy.Spider):
     # allowed_domains = ['hoover.org']
     # start_urls = ['http://hoover.org/']
     page_count = 0
-    basic_url = 'https://www.hoover.org/site-search?keyword=news&src=navbar'
+    basic_url = 'https://www.hoover.org/site-search?keyword={}'
 
     def __init__(self, name=None, **kwargs):
         super(SearchSpider, self).__init__(name, **kwargs)
@@ -30,15 +30,23 @@ class SearchSpider(scrapy.Spider):
     def parse(self, response):
         self.page_count += 1
         if self.page_count <= self.page_size:
-            item_links = response.xpath(
-                "//div[contains(@class,'view-search')]//div[@class='view-content']//h2/a/@href").extract()
-            published_times = response.xpath(
-                "//div[contains(@class,'view-search')]//div[@class='view-content']//div[@class='search-meta'][last()]/text()").extract()
-            for i in range(len(item_links)):
-                publish_time = published_times[i]
-                yield scrapy.Request(url=response.urljoin(item_links[i]), callback=self.parse_detail,
+            # item_links = response.xpath(
+            #     "//div[contains(@class,'view-search')]//div[@class='view-content']//h2/a/@href").extract()
+            # published_times = response.xpath(
+            #     "//div[contains(@class,'view-search')]//div[@class='view-content']//div[@class='search-meta'][last()]/text()").extract()
+
+            item_selectors = response.xpath(
+                "//div[contains(@class,'view-search')]//div[@class='view-content']//h2/parent::div")
+            for selector in item_selectors:
+                url = selector.xpath("./h2/a/@href").extract_first()
+                publish_time = selector.xpath(".//div[@class='search-meta'][last()]/text()").extract_first()
+                data_source = selector.xpath(".//span[@class='search-meta']/text()").extract()
+                if data_source:
+                    data_source = data_source[0].strip()
+                yield scrapy.Request(url=response.urljoin(url), callback=self.parse_detail,
                                      meta={'dont_redirect': False, 'handle_httpstatus_list': [301, 302],
-                                           "publish_time": publish_time
+                                           "publish_time": publish_time,
+                                           'data_source': data_source,
                                            })
 
             next_url = response.xpath("//li[@class='pager-next']/a/@href").extract_first()
@@ -113,7 +121,7 @@ class SearchSpider(scrapy.Spider):
         else:
             active_media = ""
 
-        contact = contact if contact else ""
+        contact = [contact] if contact else ""
         data.update({"contact": contact, "active_media": active_media})
         return data
 
@@ -142,6 +150,8 @@ class SearchSpider(scrapy.Spider):
         return data
 
     def parse_detail(self, response):
+        data_source = response.meta.get('data_source')
+
         publish_time = response.meta.get("publish_time")
         if publish_time:
             publish_time = publish_time.strip()
@@ -155,6 +165,7 @@ class SearchSpider(scrapy.Spider):
             external_url = external_url.decode()
         if response.status in [301, 302] and external_url:
             data = self.newspaper_parse(external_url, response.status, publish_time)
+            data["DataSource"] = data_source
             item = SearchItem(**data)
             yield item
 
@@ -165,6 +176,7 @@ class SearchSpider(scrapy.Spider):
                 parsing_rule_dict = parsing_rules.get(category)
                 if category in parsing_rules and category != "profiles":
                     data = self._get_item_data(category, parsing_rule_dict, response)
+                    data["DataSource"] = data_source
                     item = SearchItem(**data)
                     yield item
                 elif category in parsing_rules and category == "profiles":
@@ -178,10 +190,12 @@ class SearchSpider(scrapy.Spider):
                     #     yield item2  # 联系方式
                 else:
                     data = self.newspaper_parse(response.url, response.status, publish_time)
+                    data["DataSource"] = data_source
                     item = SearchItem(**data)
                     yield item
             else:
                 data = self.newspaper_parse(response.url, response.status, publish_time)
+                data["DataSource"] = data_source
                 item = SearchItem(**data)
                 yield item
         # else:  # 其他响应码

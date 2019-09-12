@@ -65,7 +65,7 @@ class ExportsSpider(scrapy.Spider):
         else:
             active_media = ""
 
-        contact = contact if contact else ""
+        contact = [contact] if contact else ""
         data.update({"contact": contact, "active_media": active_media})
         return data
 

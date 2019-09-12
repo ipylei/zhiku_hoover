@@ -16,6 +16,28 @@ from scrapy.http import HtmlResponse
 from hoover.items import SearchItem, ExpertItem, AbandonItem, ExpertContactItem
 from hoover.models import Session, SearchSeed, ExpertsSeed, AbandonSeed, ExpertContactSeed
 
+DataSource_Dict = {
+    "论坛": 1, "forum": 1,
+    "微博": 2, "weibo": 2,
+    "微信公众号": 3, "weixin": 3,
+    "QQ群消息": 4, "qqqunmsg": 4,
+    "新闻": 5, "news": 5,
+    "博客": 6, "blog": 6,
+    "贴吧": 7, "tieba": 7,
+    "twitter": 8,
+    "facebook": 9,
+    "电子报刊": 10,
+    "app": 11,
+    "微信群": 12,
+    "WhatsApp": 13,
+    "line": 14,
+    "telegram": 15,
+    "搜索引擎": 16,
+    "研究": 17, "research": 17,
+    "报告": 18,
+    "暗网": 20,
+}
+
 
 class HooverPipeline(object):
 
@@ -109,6 +131,11 @@ class HooverPipeline(object):
             ],
             "ListComments": ""
         }
+        data_source = item.get("DataSource")
+        if data_source and data_source.lower() in DataSource_Dict:
+            item["DataSource"] = DataSource_Dict.get(data_source.lower())
+        else:
+            item["DataSource"] = 0
         data['ListNews'][0].update(item)
         return json.dumps(data, ensure_ascii=False)
 

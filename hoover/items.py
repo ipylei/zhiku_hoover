@@ -27,6 +27,7 @@ import scrapy
 #     method = scrapy.Field()
 
 class SearchItem(scrapy.Item):
+    DataSource = scrapy.Field()
     Url = scrapy.Field()
     Title = scrapy.Field()
     Author = scrapy.Field()
