@@ -8,7 +8,6 @@ from newspaper import Article
 
 from hoover.config import parsing_rules
 from hoover.items import SearchItem, ExpertItem, ExpertContactItem, AbandonItem
-from hoover.settings import WEBSITE
 
 
 class SearchSpider(scrapy.Spider):
@@ -71,7 +70,7 @@ class SearchSpider(scrapy.Spider):
             "Category": category,
             "topic": "",
             "tags": "",
-            "site_name": WEBSITE
+            # "site_name": WEBSITE
         }
         return data
 
@@ -144,7 +143,7 @@ class SearchSpider(scrapy.Spider):
         data['Category'] = ""
         data['topic'] = ""
         data['tags'] = ""
-        data['site_name'] = WEBSITE
+        # data['site_name'] = WEBSITE
         # data['method'] = 'newspaper'
         # data['status_code'] = status_code
         return data
