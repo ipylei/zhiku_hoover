@@ -17,10 +17,29 @@ class SearchSpider(scrapy.Spider):
     page_count = 0
     basic_url = 'https://www.hoover.org/site-search?keyword={}'
 
-    def __init__(self, name=None, **kwargs):
-        super(SearchSpider, self).__init__(name, **kwargs)
-        self.keyword = kwargs.get('keyword') if kwargs.get('keyword') else 'news'
-        self.page_size = kwargs.get('page_size') if kwargs.get('page_size') else 10
+    # def __init__(self, name=None, **kwargs):
+    #     super(SearchSpider, self).__init__(name, **kwargs)
+    #     self.keyword = kwargs.get('keyword') if kwargs.get('keyword') else 'china'
+    #     self.page_size = kwargs.get('page_size') if kwargs.get('page_size') else 10
+
+    def __init__(self,
+                 keyword='china',
+                 page_size=10,
+                 mq_host='10.4.9.177',
+                 mq_username='admin',
+                 mq_password='123456',
+                 # mq_host='127.0.0.1',
+                 # mq_username='guest',
+                 # mq_password='guest',
+
+                 mq_port=5672, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.keyword = keyword
+        self.page_size = page_size
+        self.mq_host = mq_host
+        self.mq_port = mq_port
+        self.mq_username = mq_username
+        self.mq_password = mq_password
 
     def start_requests(self):
         start_url = self.basic_url.format(self.keyword)
@@ -151,24 +170,24 @@ class SearchSpider(scrapy.Spider):
     def parse_detail(self, response):
         data_source = response.meta.get('data_source')
 
-        publish_time = response.meta.get("publish_time")
-        if publish_time:
-            publish_time = publish_time.strip()
-            publish_time = str(datetime.datetime.strptime(publish_time, "%A, %B %d, %Y"))
-        else:
-            publish_time = ""
+        # publish_time = response.meta.get("publish_time")
+        # if publish_time:
+        #     publish_time = publish_time.strip()
+        #     publish_time = str(datetime.datetime.strptime(publish_time, "%A, %B %d, %Y"))
+        # else:
+        #     publish_time = ""
+        #
+        # # 重定向的网址
+        # external_url = response.headers.get("Location")
+        # if external_url:
+        #     external_url = external_url.decode()
+        # if response.status in [301, 302] and external_url:
+        #     data = self.newspaper_parse(external_url, response.status, publish_time)
+        #     data["DataSource"] = data_source
+        #     item = SearchItem(**data)
+        #     yield item
 
-        # 重定向的网址
-        external_url = response.headers.get("Location")
-        if external_url:
-            external_url = external_url.decode()
-        if response.status in [301, 302] and external_url:
-            data = self.newspaper_parse(external_url, response.status, publish_time)
-            data["DataSource"] = data_source
-            item = SearchItem(**data)
-            yield item
-
-        elif response.status == 200:
+        if response.status == 200:
             category = re.search('.*?hoover.org/(.*?)/\S+', response.url)
             if category:
                 category = category.group(1)
@@ -187,17 +206,17 @@ class SearchSpider(scrapy.Spider):
                     #     contact_data = {"url": response.url, "name": data.get("name"), "type": key, "contact": value}
                     #     item2 = ExpertContactItem(**contact_data)
                     #     yield item2  # 联系方式
-                else:
-                    data = self.newspaper_parse(response.url, response.status, publish_time)
-                    data["DataSource"] = data_source
-                    item = SearchItem(**data)
-                    yield item
-            else:
-                data = self.newspaper_parse(response.url, response.status, publish_time)
-                data["DataSource"] = data_source
-                item = SearchItem(**data)
-                yield item
-        # else:  # 其他响应码
-        #     data = {"status_code": response.status, "internal_url": response.url, "external_url": external_url}
-        #     item = AbandonItem(**data)
-        #     yield item
+        #         else:
+        #             data = self.newspaper_parse(response.url, response.status, publish_time)
+        #             data["DataSource"] = data_source
+        #             item = SearchItem(**data)
+        #             yield item
+        #     else:
+        #         data = self.newspaper_parse(response.url, response.status, publish_time)
+        #         data["DataSource"] = data_source
+        #         item = SearchItem(**data)
+        #         yield item
+        # # else:  # 其他响应码
+        # #     data = {"status_code": response.status, "internal_url": response.url, "external_url": external_url}
+        # #     item = AbandonItem(**data)
+        # #     yield item

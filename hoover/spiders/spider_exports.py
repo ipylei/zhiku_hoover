@@ -13,6 +13,25 @@ class ExportsSpider(scrapy.Spider):
     # allowed_domains = ['hoover.org']
     start_urls = ['https://www.hoover.org/fellows']
 
+    def __init__(self,
+                 keyword='china',
+                 page_size=10,
+                 mq_host='10.4.9.177',
+                 mq_username='admin',
+                 mq_password='123456',
+                 # mq_host='127.0.0.1',
+                 # mq_username='guest',
+                 # mq_password='guest',
+
+                 mq_port=5672, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.keyword = keyword
+        self.page_size = page_size
+        self.mq_host = mq_host
+        self.mq_port = mq_port
+        self.mq_username = mq_username
+        self.mq_password = mq_password
+
     def parse(self, response):
         urls = response.xpath(
             "//div[@id='main']//div[@class='view-content']//h3[contains(@class,'field-name-title')]/a/@href").extract()
