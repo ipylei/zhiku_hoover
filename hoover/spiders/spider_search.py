@@ -61,11 +61,12 @@ class SearchSpider(scrapy.Spider):
                 data_source = selector.xpath(".//span[@class='search-meta']/text()").extract()
                 if data_source:
                     data_source = data_source[0].strip()
-                yield scrapy.Request(url=response.urljoin(url), callback=self.parse_detail,
-                                     meta={'dont_redirect': False, 'handle_httpstatus_list': [301, 302],
-                                           "publish_time": publish_time,
-                                           'data_source': data_source,
-                                           })
+                if url:
+                    yield scrapy.Request(url=response.urljoin(url), callback=self.parse_detail,
+                                         meta={'dont_redirect': False, 'handle_httpstatus_list': [301, 302],
+                                               "publish_time": publish_time,
+                                               'data_source': data_source,
+                                               })
 
             next_url = response.xpath("//li[@class='pager-next']/a/@href").extract_first()
             if next_url:
