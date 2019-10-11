@@ -18,7 +18,8 @@ class ExportsSpider(scrapy.Spider):
     def __init__(self,
                  keyword='china',
                  page_size=10,
-                 mq_host='10.4.9.177',
+                 # mq_host='10.4.9.177',
+                 mq_host='39.98.176.208',
                  mq_username='admin',
                  mq_password='123456',
                  # mq_host='127.0.0.1',
@@ -145,10 +146,16 @@ class ExportsSpider(scrapy.Spider):
         publish_time = str(datetime.datetime.strptime(published_time, "%A, %B %d, %Y"))
         content = response.xpath(parsing_rule_dict.get("content")).extract_first()
         description = response.xpath(parsing_rule_dict.get("description")).extract_first()
+        xpath_author = parsing_rule_dict.get("author")
+        if xpath_author:
+            author = response.xpath(xpath_author).extract()
+            author = ','.join(author)
+        else:
+            author = ""
         data = {
             "Url": response.url,
             "Title": title,
-            "Author": "",
+            "Author": author,
             "PublishTime": publish_time,
             "Keywords": "",
             "Abstract": description if description else "",
