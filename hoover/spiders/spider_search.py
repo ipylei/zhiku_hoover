@@ -23,8 +23,10 @@ class SearchSpider(scrapy.Spider):
     #     self.page_size = kwargs.get('page_size') if kwargs.get('page_size') else 10
 
     def __init__(self,
-                 keyword='china',
-                 page_size=10,
+                 keyword='event',
+                 # keyword='china',
+
+                 page_size=100,
                  # mq_host='10.4.9.177',
                  mq_host='39.98.176.208',
                  mq_username='admin',

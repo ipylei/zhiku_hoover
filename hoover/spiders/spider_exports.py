@@ -11,7 +11,7 @@ from hoover.items import ExpertItem, AbandonItem, ExpertContactItem, SearchItem
 
 
 class ExportsSpider(scrapy.Spider):
-    name = 'spider_exports'
+    name = 'spider_export'
     # allowed_domains = ['hoover.org']
     start_urls = ['https://www.hoover.org/fellows']
 
@@ -87,7 +87,7 @@ class ExportsSpider(scrapy.Spider):
         else:
             active_media = ""
 
-        contact = [contact] if contact else ""
+        contact = [contact] if contact else []
         data.update({"contact": contact, "active_media": active_media})
         return data
 
@@ -106,21 +106,20 @@ class ExportsSpider(scrapy.Spider):
                 yield item
 
             # todo 采集专家发布的文章
-            # self._parse_article_url(response)
-            item_selectors = response.xpath(
-                "//div[@id='mini-panel-fellow_research']//div[@class='view-content']/div[contains(@class,'views-row')]")
-            for selector in item_selectors:
-                url = selector.xpath(".//h2/a/@href").extract_first()
-                # publish_time = selector.xpath(".//span[@class='date-display-single']/text()").extract_first()
-                if url:
-                    yield scrapy.Request(url=response.urljoin(url), callback=self.parse_detail,
-                                         meta={'dont_redirect': False, 'handle_httpstatus_list': [301, 302],
-                                               # "publish_time": publish_time,
-                                               'data_source': 5})
-            # 提取出下一页的url
-            next_url = response.xpath("//a[contains(text(),'next')]/@href").extract_first()
-            if next_url:
-                yield scrapy.Request(url=response.urljoin(next_url), callback=self.parse_article_url)
+            # item_selectors = response.xpath(
+            #     "//div[@id='mini-panel-fellow_research']//div[@class='view-content']/div[contains(@class,'views-row')]")
+            # for selector in item_selectors:
+            #     url = selector.xpath(".//h2/a/@href").extract_first()
+            #     # publish_time = selector.xpath(".//span[@class='date-display-single']/text()").extract_first()
+            #     if url:
+            #         yield scrapy.Request(url=response.urljoin(url), callback=self.parse_detail,
+            #                              meta={'dont_redirect': False, 'handle_httpstatus_list': [301, 302],
+            #                                    # "publish_time": publish_time,
+            #                                    'data_source': 5})
+            # # 提取出下一页的url
+            # next_url = response.xpath("//a[contains(text(),'next')]/@href").extract_first()
+            # if next_url:
+            #     yield scrapy.Request(url=response.urljoin(next_url), callback=self.parse_article_url)
 
     def parse_article_url(self, response):
         # 采集专家发布的文章
