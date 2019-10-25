@@ -45,6 +45,8 @@ class SearchSpider(scrapy.Spider):
         self.mq_password = mq_password
 
     def start_requests(self):
+        # keywords = self.keyword.split(' ')
+        # for keyword in keywords:
         start_url = self.basic_url.format(self.keyword)
         yield scrapy.Request(url=start_url)
 
@@ -206,7 +208,10 @@ class SearchSpider(scrapy.Spider):
                     data = self._get_item_data(category, parsing_rule_dict, response)
                     data["DataSource"] = data_source
                     item = SearchItem(**data)
-                    yield item
+                    if item["PublishTime"]:
+                        yield item
+                    else:
+                        yield
                 elif category in parsing_rules and category == "profiles":
                     data = self._get_experts_data(parsing_rule_dict, response)
                     # contacts = data.pop("contact")
